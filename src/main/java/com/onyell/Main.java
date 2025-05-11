@@ -7,11 +7,10 @@ import lombok.Getter;
 public class Main extends KPlugin {
 
     @Getter
-    public static Main instance;
+    private static Main instance;
 
     @Override
     public void start() {
-        // Fazer o Load das informações.
         getLogger().info("");
     }
 
