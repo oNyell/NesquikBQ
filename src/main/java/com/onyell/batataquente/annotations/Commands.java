@@ -1,4 +1,4 @@
-package com.onyell.annotations;
+package com.onyell.batataquente.annotations;
 
 import java.lang.annotation.*;
 

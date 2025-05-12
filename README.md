@@ -1,4 +1,5 @@
 # Batata Quente - (RedeSky)
+- ATENÇÃO: Iniciar o plugin em JAVA 8 !!!!
 
 ## Comandos: 
 -  `/dev` - Ativará o modo Debug, o modo debug é onde todas as logs do plugin será exibida no console e no chat do desenvolvedor.

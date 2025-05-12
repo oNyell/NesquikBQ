@@ -1,4 +1,4 @@
-package com.onyell.interfaces;
+package com.onyell.batataquente.interfaces;
 
 import org.bukkit.command.CommandSender;
 

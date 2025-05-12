@@ -1,7 +1,7 @@
-package com.onyell.commands.cmds;
+package com.onyell.batataquente.commands.cmds;
 
-import com.onyell.annotations.Commands;
-import com.onyell.interfaces.CommandInterface;
+import com.onyell.batataquente.annotations.Commands;
+import com.onyell.batataquente.interfaces.CommandInterface;
 import org.bukkit.command.CommandSender;
 
 /*
@@ -11,6 +11,10 @@ import org.bukkit.command.CommandSender;
 public class DevCommand implements CommandInterface {
     @Override
     public void execute(CommandSender sender, String label, String[] args) {
+        if (!sender.hasPermission("onyell.dev")) {
+            sender.sendMessage("§cVocê não tem permissão para usar esse comando.");
+            return;
+        }
         if (args.length < 1) {
             sender.sendMessage("§cUtilize \"/dev [on/off]\" para ativar ou desativar o debug.");
             return;
@@ -18,10 +22,12 @@ public class DevCommand implements CommandInterface {
         String arg = args[0].toLowerCase();
         switch (arg) {
             case "on": {
+                sender.sendMessage("§aDebug ativado com sucesso.");
                 //TODO: Ativar o debug utilizando a config.yml (Ao reiniciar o servidor, ela voltará para o padrão {onDebug: false})
                 break;
             }
             case "off": {
+                sender.sendMessage("§cDebug desativado com sucesso.");
                 //TODO: Desativar o debug utilizando a config.yml (Ao reiniciar o servidor, ela voltará para o padrão {onDebug: true})
                 break;
             }

@@ -1,8 +1,8 @@
-package com.onyell.commands;
+package com.onyell.batataquente.commands;
 
-import com.onyell.Main;
-import com.onyell.annotations.Commands;
-import com.onyell.interfaces.CommandInterface;
+import com.onyell.batataquente.Main;
+import com.onyell.batataquente.annotations.Commands;
+import com.onyell.batataquente.interfaces.CommandInterface;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.SimpleCommandMap;
