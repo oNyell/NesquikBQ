@@ -1,6 +1,7 @@
 package com.onyell.batataquente.utils;
 
 import com.onyell.batataquente.Main;
+import com.onyell.batataquente.enums.MessageType;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -16,6 +17,10 @@ public class Logger {
     
     @Getter
     private static final List<UUID> debugPlayers = new ArrayList<>();
+    
+    /**
+     * Inicializa o modo de debug com base na configuração
+     */
     public static void initialize() {
         debugMode = Main.getInstance().getConfig().getBoolean("debug");
         Main.getInstance().getLogger().info("§eDebug mode: " + (debugMode ? "§aON" : "§cOFF"));
@@ -56,10 +61,11 @@ public class Logger {
     public static void debug(String message) {
         if (!debugMode) return;
         
-        String formattedMessage = "§e[DEBUG] §f" + message;
+        String formattedMessage = MessageType.DEBUG.getColor() + "[DEBUG] §f" + message;
 
         Main.getInstance().getLogger().info(formattedMessage);
 
+        // Enviar para todos os jogadores na lista de debug
         for (UUID uuid : debugPlayers) {
             Player player = Bukkit.getPlayer(uuid);
             if (player != null && player.isOnline()) {
@@ -73,7 +79,7 @@ public class Logger {
      * @param message Mensagem a ser enviada
      */
     public static void info(String message) {
-        Main.getInstance().getLogger().info("§b[INFO] §f" + message);
+        Main.getInstance().getLogger().info(MessageType.INFO.getColor() + "[INFO] §f" + message);
     }
     
     /**
@@ -81,7 +87,7 @@ public class Logger {
      * @param message Mensagem a ser enviada
      */
     public static void error(String message) {
-        Main.getInstance().getLogger().severe("§c[ERROR] §f" + message);
+        Main.getInstance().getLogger().severe(MessageType.ERROR.getColor() + "[ERROR] §f" + message);
     }
     
     /**
@@ -89,6 +95,6 @@ public class Logger {
      * @param message Mensagem a ser enviada
      */
     public static void warning(String message) {
-        Main.getInstance().getLogger().warning("§6[WARNING] §f" + message);
+        Main.getInstance().getLogger().warning(MessageType.WARNING.getColor() + "[WARNING] §f" + message);
     }
 } 

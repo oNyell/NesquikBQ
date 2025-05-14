@@ -1,6 +1,7 @@
 package com.onyell.batataquente.commands.cmds;
 
 import com.onyell.batataquente.annotations.Commands;
+import com.onyell.batataquente.enums.Messages;
 import com.onyell.batataquente.interfaces.CommandInterface;
 import com.onyell.batataquente.utils.Logger;
 import org.bukkit.Bukkit;
@@ -15,12 +16,12 @@ public class DevCommand implements CommandInterface {
     @Override
     public void execute(CommandSender sender, String label, String[] args) {
         if (!sender.hasPermission("onyell.dev")) {
-            sender.sendMessage("§cVocê não tem permissão para usar esse comando.");
+            sender.sendMessage(Messages.NO_PERMISSION.getMessage());
             return;
         }
         
         if (args.length < 1) {
-            sender.sendMessage("§cUtilize \"/dev [on/off/add/remove/test]\" para gerenciar o modo debug.");
+            sender.sendMessage(Messages.DEV_HELP.getMessage());
             return;
         }
         
@@ -28,78 +29,78 @@ public class DevCommand implements CommandInterface {
         switch (arg) {
             case "on": {
                 Logger.setDebugMode(true);
-                sender.sendMessage("§aDebug ativado com sucesso.");
-                Logger.debug("Modo debug ativado por " + sender.getName());
+                sender.sendMessage(Messages.DEV_ON.getMessage());
+                Logger.debug(Messages.DEBUG_ENABLED_BY.get("player", sender.getName()));
                 break;
             }
             case "off": {
                 Logger.setDebugMode(false);
-                sender.sendMessage("§cDebug desativado com sucesso.");
+                sender.sendMessage(Messages.DEV_OFF.getMessage());
                 break;
             }
             case "add": {
                 if (args.length < 2) {
                     if (!(sender instanceof Player)) {
-                        sender.sendMessage("§cUtilize \"/dev add <jogador>\" para adicionar um jogador à lista de debug.");
+                        sender.sendMessage(Messages.DEV_ADD_USAGE.getMessage());
                         return;
                     }
 
                     Player player = (Player) sender;
                     Logger.addDebugPlayer(player);
-                    sender.sendMessage("§aVocê foi adicionado à lista de debug. Agora você receberá todas as mensagens de debug no chat.");
-                    Logger.debug("Jogador " + player.getName() + " adicionado à lista de debug");
+                    sender.sendMessage(Messages.DEV_ADD_SELF.getMessage());
+                    Logger.debug(Messages.DEBUG_PLAYER_ADDED.get("player", player.getName(), "sender", "si mesmo"));
                 } else {
                     String playerName = args[1];
                     Player target = Bukkit.getPlayer(playerName);
                     
                     if (target == null || !target.isOnline()) {
-                        sender.sendMessage("§cJogador não encontrado ou não está online.");
+                        sender.sendMessage(Messages.PLAYER_NOT_FOUND.getMessage());
                         return;
                     }
                     
                     Logger.addDebugPlayer(target);
-                    sender.sendMessage("§aJogador " + target.getName() + " foi adicionado à lista de debug.");
-                    target.sendMessage("§aVocê foi adicionado à lista de debug. Agora você receberá todas as mensagens de debug no chat.");
-                    Logger.debug("Jogador " + target.getName() + " adicionado à lista de debug por " + sender.getName());
+                    sender.sendMessage(Messages.DEV_ADD_OTHER.getMessage("player", target.getName()));
+                    target.sendMessage(Messages.DEV_ADD_NOTIFY.getMessage());
+                    Logger.debug(Messages.DEBUG_PLAYER_ADDED.get("player", target.getName(), "sender", sender.getName()));
                 }
                 break;
             }
             case "remove": {
                 if (args.length < 2) {
                     if (!(sender instanceof Player)) {
-                        sender.sendMessage("§cUtilize \"/dev remove <jogador>\" para remover um jogador da lista de debug.");
+                        sender.sendMessage(Messages.DEV_REMOVE_USAGE.getMessage());
                         return;
                     }
 
                     Player player = (Player) sender;
                     Logger.removeDebugPlayer(player);
-                    sender.sendMessage("§cVocê foi removido da lista de debug.");
+                    sender.sendMessage(Messages.DEV_REMOVE_SELF.getMessage());
                 } else {
                     String playerName = args[1];
                     Player target = Bukkit.getPlayer(playerName);
                     
                     if (target == null || !target.isOnline()) {
-                        sender.sendMessage("§cJogador não encontrado ou não está online.");
+                        sender.sendMessage(Messages.PLAYER_NOT_FOUND.getMessage());
                         return;
                     }
                     
                     Logger.removeDebugPlayer(target);
-                    sender.sendMessage("§cJogador " + target.getName() + " foi removido da lista de debug.");
-                    target.sendMessage("§cVocê foi removido da lista de debug.");
-                    Logger.debug("Jogador " + target.getName() + " removido da lista de debug por " + sender.getName());
+                    sender.sendMessage(Messages.DEV_REMOVE_OTHER.getMessage("player", target.getName()));
+                    target.sendMessage(Messages.DEV_REMOVE_NOTIFY.getMessage());
+                    Logger.debug(Messages.DEBUG_PLAYER_REMOVED.get("player", target.getName(), "sender", sender.getName()));
                 }
                 break;
             }
             case "test": {
-                Logger.debug("Este é um teste de mensagem de debug");
-                Logger.info("Este é um teste de mensagem de informação");
-                Logger.warning("Este é um teste de mensagem de aviso");
-                Logger.error("Este é um teste de mensagem de erro");
-                sender.sendMessage("§aMensagens de teste enviadas para o console e jogadores na lista de debug.");
+                Logger.debug(Messages.DEBUG_TEST.get());
+                Logger.info(Messages.INFO_TEST.get());
+                Logger.warning(Messages.WARNING_TEST.get());
+                Logger.error(Messages.ERROR_TEST.get());
+                sender.sendMessage(Messages.DEV_TEST.getMessage());
                 break;
             }
             default: {
-                sender.sendMessage("§cUtilize \"/dev [on/off/add/remove/test]\" para gerenciar o modo debug.");
+                sender.sendMessage(Messages.DEV_HELP.getMessage());
                 break;
             }
         }
