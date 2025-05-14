@@ -1,3 +1,7 @@
 # Here you can change the language plugin
 # The default language is portuguese (ptbr), but you can change it to english
 language: ptbr
+
+# Debug configuration
+# When set to true, debug messages will be shown in console
+debug: false

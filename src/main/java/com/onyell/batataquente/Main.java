@@ -1,6 +1,7 @@
 package com.onyell.batataquente;
 
 import com.onyell.batataquente.commands.CommandManager;
+import com.onyell.batataquente.utils.Logger;
 import dev.slickcollections.kiwizin.plugin.KPlugin;
 import dev.slickcollections.kiwizin.plugin.logger.KLogger;
 import lombok.Getter;
@@ -13,17 +14,20 @@ public class Main extends KPlugin {
     @Override
     public void load() {
         instance = this;
+        saveDefaultConfig();
     }
 
     @Override
     public void enable() {
+        Logger.initialize();
         CommandManager.setupCommands();
-        getLogger().info("§aPlugin ativo com sucesso!");
+        
+        Logger.info("Plugin ativo com sucesso!");
     }
 
     @Override
     public void disable() {
-        getLogger().info("§aPlugin desligado com sucesso!");
+        Logger.info("Plugin desligado com sucesso!");
     }
 
     @Override

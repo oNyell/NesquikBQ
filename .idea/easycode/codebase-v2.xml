@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="com.obiscr.chatgpt.settings.EasyCodeState">
+    <option name="projectFiles" value="$PROJECT_DIR$/src/main/java/com/onyell/batataquente/annotations/Commands.java;C:/Users/newre/Documents/Projetos/NesquikBatataQuente/src/main/java/com/onyell/batataquente/commands/cmds/DevCommand.java;C:/Users/newre/Documents/Projetos/NesquikBatataQuente/src/main/java/com/onyell/batataquente/commands/CommandManager.java;C:/Users/newre/Documents/Projetos/NesquikBatataQuente/src/main/java/com/onyell/batataquente/enums/defaulD.java;C:/Users/newre/Documents/Projetos/NesquikBatataQuente/src/main/java/com/onyell/batataquente/interfaces/CommandInterface.java;C:/Users/newre/Documents/Projetos/NesquikBatataQuente/src/main/java/com/onyell/batataquente/language/Languages.java;C:/Users/newre/Documents/Projetos/NesquikBatataQuente/src/main/java/com/onyell/batataquente/Main.java;C:/Users/newre/Documents/Projetos/NesquikBatataQuente/README.md" />
+  </component>
+</project>
