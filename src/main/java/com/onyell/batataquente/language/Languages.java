@@ -3,11 +3,13 @@ package com.onyell.batataquente.language;
 import com.onyell.batataquente.Main;
 import com.onyell.batataquente.enums.MessageType;
 import com.onyell.batataquente.enums.Messages;
+import com.onyell.batataquente.utils.Logger;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -16,31 +18,62 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Languages {
-    
+
     private static final Map<Messages, String> messagesCache = new HashMap<>();
+
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{([^}]+)\\}");
     
     public static void loadMessages() {
         messagesCache.clear();
         
         String language = Main.getInstance().getConfig().getString("language", "ptbr");
+        Logger.debug("Carregando mensagens em: " + language);
         
         File languageFile = new File(Main.getInstance().getDataFolder(), "messages_" + language + ".yml");
-        FileConfiguration langConfig = null;
         
-        if (languageFile.exists()) {
-            langConfig = YamlConfiguration.loadConfiguration(languageFile);
+        if (!languageFile.exists()) {
+            Logger.warning("Arquivo de idioma não encontrado. Criando arquivo padrão.");
+            saveDefaultMessages(language);
         }
         
+        FileConfiguration langConfig = YamlConfiguration.loadConfiguration(languageFile);
+        
+        int loaded = 0;
         for (Messages message : Messages.values()) {
-            String path = message.name().toLowerCase().replace("_", ".");
+            String path = getConfigPath(message);
             String defaultMessage = message.getDefaultMessage();
-            if (langConfig != null && langConfig.contains(path)) {
+            
+            if (langConfig.contains(path)) {
                 messagesCache.put(message, langConfig.getString(path));
+                loaded++;
             } else {
                 messagesCache.put(message, defaultMessage);
+                Logger.debug("Mensagem não encontrada no arquivo: " + path);
             }
         }
+        
+        Logger.info("Sistema de mensagens carregado: " + loaded + " mensagens encontradas.");
+    }
+    
+    /**
+     * Converte o nome da enum para o caminho no arquivo de configuração
+     * @param message Mensagem a ser convertida
+     * @return Caminho na configuração
+     */
+    private static String getConfigPath(Messages message) {
+        String name = message.name();
+        String category = name.split("_")[0].toLowerCase();
+        String key = name.substring(name.indexOf("_") + 1).toLowerCase();
+
+        if (name.equals("PREFIX")) {
+            return "system.prefix";
+        }
+
+        if (name.indexOf("_") == -1) {
+            return "general." + name.toLowerCase();
+        }
+        
+        return category + "." + key;
     }
     
     /**
@@ -66,7 +99,7 @@ public class Languages {
                 replacementsMap.put(key, value);
             }
         }
-        
+
         Matcher matcher = PLACEHOLDER_PATTERN.matcher(msg);
         StringBuffer result = new StringBuffer();
         
@@ -86,26 +119,38 @@ public class Languages {
      * @param language Idioma a ser salvo (ex: "ptbr", "enus")
      */
     public static void saveDefaultMessages(String language) {
+        File dataFolder = Main.getInstance().getDataFolder();
+        if (!dataFolder.exists() && !dataFolder.mkdirs()) {
+            Logger.error("Falha ao criar pasta de dados do plugin.");
+            return;
+        }
+        
+        File langFile = new File(dataFolder, "messages_" + language + ".yml");
+        boolean isNewFile = !langFile.exists();
+        
         try {
-            File dataFolder = Main.getInstance().getDataFolder();
-            if (!dataFolder.exists()) {
-                dataFolder.mkdirs();
-            }
-            
-            File langFile = new File(dataFolder, "messages_" + language + ".yml");
-            boolean isNewFile = !langFile.exists();
-
             FileConfiguration langConfig = YamlConfiguration.loadConfiguration(langFile);
-
+            
             String header = "# Arquivo de mensagens para o idioma: " + language + "\n" +
                           "# Você pode personalizar todas as mensagens do plugin aqui.\n" +
                           "# Use § para cores. Placeholders: {player}, {sender}, etc.";
             langConfig.options().header(header);
 
+            Map<String, Map<String, String>> categories = new HashMap<>();
+            
             for (Messages message : Messages.values()) {
-                String path = message.name().toLowerCase().replace("_", ".");
+                String path = getConfigPath(message);
+                String defaultValue = message.getDefaultMessage();
+                
                 if (!langConfig.contains(path) || isNewFile) {
-                    langConfig.set(path, message.getDefaultMessage());
+                    String[] parts = path.split("\\.");
+                    String category = parts[0];
+                    String key = parts.length > 1 ? parts[1] : "";
+                    
+                    Map<String, String> categoryMap = categories.computeIfAbsent(category, k -> new HashMap<>());
+                    categoryMap.put(key, defaultValue);
+                    
+                    langConfig.set(path, defaultValue);
                 }
             }
 
@@ -113,22 +158,36 @@ public class Languages {
             langConfig.save(tempFile);
 
             try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(langFile), StandardCharsets.UTF_8)) {
-                writer.write(header + "\n");
+                writer.write(header + "\n\n");
 
-                YamlConfiguration tempConfig = YamlConfiguration.loadConfiguration(tempFile);
-                for (Messages message : Messages.values()) {
-                    String path = message.name().toLowerCase().replace("_", ".");
-                    String value = tempConfig.getString(path);
-                    if (value != null) {
-                        writer.write(path + ": \"" + value.replace("\"", "\\\"") + "\"\n");
+                for (Map.Entry<String, Map<String, String>> categoryEntry : categories.entrySet()) {
+                    String category = categoryEntry.getKey();
+                    Map<String, String> messages = categoryEntry.getValue();
+                    
+                    writer.write("# Mensagens de " + category + "\n");
+                    
+                    for (Map.Entry<String, String> messageEntry : messages.entrySet()) {
+                        String key = messageEntry.getKey();
+                        String value = messageEntry.getValue().replace("\"", "\\\"");
+                        
+                        if (key.isEmpty()) {
+                            writer.write(category + ": \"" + value + "\"\n");
+                        } else {
+                            writer.write(category + "." + key + ": \"" + value + "\"\n");
+                        }
                     }
+                    
+                    writer.write("\n");
                 }
             }
-            tempFile.delete();
-            Main.getInstance().getLogger().info("Arquivo de mensagens para " + language + " salvo com sucesso!");
-        } catch (Exception e) {
-            Main.getInstance().getLogger().severe("Erro ao salvar arquivo de mensagens para " + language + ": " + e.getMessage());
-            e.printStackTrace();
+
+            if (!tempFile.delete()) {
+                Logger.warning("Não foi possível excluir arquivo temporário: " + tempFile.getPath());
+            }
+            
+            Logger.info("Arquivo de mensagens para " + language + " salvo com sucesso!");
+        } catch (IOException e) {
+            Logger.error("Erro ao salvar arquivo de mensagens para " + language + ": " + e.getMessage());
         }
     }
 }

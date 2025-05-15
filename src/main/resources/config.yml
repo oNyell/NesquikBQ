@@ -1,7 +1,29 @@
-# Here you can change the language plugin
-# The default language is portuguese (ptbr), but you can change it to english
-language: ptbr
+# =====================================================
+# BatataQuente - Configuração principal
+# =====================================================
 
-# Debug configuration
-# When set to true, debug messages will be shown in console
+# Configurações gerais
+# ----------------------------------------------------
+# language: Idioma do plugin (ptbr ou enus)
+# prefix-enabled: Se o prefixo deve ser mostrado nas mensagens
+language: ptbr
+prefix-enabled: true
+
+# Configurações de debug
+# ----------------------------------------------------
+# debug: Quando ativado, mensagens de debug serão mostradas
 debug: false
+
+# Configurações de logging
+# ----------------------------------------------------
+# enabled: Ativa/desativa o sistema de logs
+# debug-to-file: Se mensagens de debug devem ser salvas no arquivo
+# max-log-days: Número máximo de dias para manter logs (0 = manter todos)
+logging:
+  enabled: true
+  debug-to-file: true
+  max-log-days: 7
+
+# =====================================================
+# Fim da configuração
+# =====================================================

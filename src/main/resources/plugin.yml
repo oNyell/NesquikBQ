@@ -1,6 +1,7 @@
-author: oNyell
 name: NesquikBatataQuente
-version: 1.0.0
+version: ${project.version}
+description: Plugin de BatataQuente para servidor Minecraft
+author: oNyell
+website: https://onyell.com
+main: com.onyell.batataquente.Main
 depend: [kCore]
-
-main: ${default}
