@@ -16,42 +16,42 @@ public class Main extends KPlugin {
     public void load() {
         instance = this;
         saveDefaultConfig();
+
+        getLogger().info("Carregando plugin BatataQuente...");
     }
 
     @Override
     public void enable() {
-        // Inicializa os sistemas de mensagens
         initializeMessagesSystem();
-        
-        // Inicializa o Logger
+
         Logger.initialize();
-        
-        // Registra comandos
+
+        Logger.debug("Plugin está sendo inicializado...");
+
         CommandManager.setupCommands();
-        
+
         Logger.info("Plugin ativo com sucesso!");
+        Logger.debug("Inicialização concluída!");
     }
 
     @Override
     public void disable() {
+        Logger.debug("Plugin está sendo desligado...");
+
         Logger.info("Plugin desligado com sucesso!");
+        Logger.shutdown();
     }
 
     @Override
     public void start() {
+        Logger.debug("Método start() chamado - Fase final de inicialização");
     }
     
-    /**
-     * Inicializa o sistema de mensagens
-     */
     private void initializeMessagesSystem() {
-        // Carrega as mensagens do idioma configurado
         Languages.loadMessages();
-        
-        // Salva os arquivos de mensagens padrão para os idiomas disponíveis
-        // Isso garante que todos os idiomas terão todas as mensagens
-        Languages.saveDefaultMessages("ptbr"); // Português
-        Languages.saveDefaultMessages("enus"); // Inglês
+
+        Languages.saveDefaultMessages("ptbr");
+        Languages.saveDefaultMessages("enus");
         
         getLogger().info("Sistema de mensagens inicializado com sucesso.");
     }

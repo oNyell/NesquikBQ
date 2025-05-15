@@ -6,7 +6,13 @@ import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,46 +24,121 @@ public class Logger {
     @Getter
     private static final List<UUID> debugPlayers = new ArrayList<>();
     
-    /**
-     * Inicializa o modo de debug com base na configuração
-     */
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+    private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss");
+    private static final SimpleDateFormat FILE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+    
+    private static File logDirectory;
+    private static File currentLogFile;
+    private static PrintWriter logWriter;
     public static void initialize() {
         debugMode = Main.getInstance().getConfig().getBoolean("debug");
-        Main.getInstance().getLogger().info("§eDebug mode: " + (debugMode ? "§aON" : "§cOFF"));
+
+        setupLogDirectory();
+
+        setupCurrentLogFile();
+
+        log("§eDebug mode: " + (debugMode ? "§aON" : "§cOFF"));
+        log("§bSistema de logs inicializado com sucesso");
     }
-    
-    /**
-     * Ativa ou desativa o modo de debug
-     * @param debug true para ativar, false para desativar
-     */
+
+    private static void setupLogDirectory() {
+        logDirectory = new File(Main.getInstance().getDataFolder(), "logs");
+        if (!logDirectory.exists()) {
+            if (logDirectory.mkdirs()) {
+                Main.getInstance().getLogger().info("Diretório de logs criado com sucesso");
+            } else {
+                Main.getInstance().getLogger().severe("Falha ao criar diretório de logs");
+            }
+        }
+    }
+
+    private static void setupCurrentLogFile() {
+        closeLogFile();
+        
+        String today = FILE_DATE_FORMAT.format(new Date());
+        currentLogFile = new File(logDirectory, "log-" + today + ".log");
+        
+        try {
+            logWriter = new PrintWriter(new FileWriter(currentLogFile, true), true);
+
+            if (currentLogFile.length() == 0) {
+                logWriter.println("# Log do plugin BatataQuente - " + today);
+                logWriter.println("# Formato: [HORA] [TIPO] Mensagem");
+                logWriter.println("---------------------------------------------");
+            }
+
+            logWriter.println();
+            logWriter.println("# Nova sessão iniciada em " + TIME_FORMAT.format(new Date()));
+            logWriter.println();
+        } catch (IOException e) {
+            Main.getInstance().getLogger().severe("Falha ao abrir arquivo de log: " + e.getMessage());
+        }
+    }
+
+    private static void closeLogFile() {
+        if (logWriter != null) {
+            logWriter.println();
+            logWriter.println("# Sessão encerrada em " + TIME_FORMAT.format(new Date()));
+            logWriter.println();
+            logWriter.close();
+            logWriter = null;
+        }
+    }
+
+    public static void shutdown() {
+        closeLogFile();
+    }
+
+    private static void checkLogFileDate() {
+        if (currentLogFile != null) {
+            String today = FILE_DATE_FORMAT.format(new Date());
+            String currentFileName = currentLogFile.getName();
+            String expectedFileName = "log-" + today + ".log";
+            
+            if (!currentFileName.equals(expectedFileName)) {
+                setupCurrentLogFile();
+            }
+        } else {
+            setupCurrentLogFile();
+        }
+    }
+
+    private static void logToFile(String type, String message) {
+        try {
+            checkLogFileDate();
+            
+            if (logWriter != null) {
+                String time = TIME_FORMAT.format(new Date());
+                String cleanMessage = message.replaceAll("§[0-9a-fk-or]", "");
+                logWriter.println("[" + time + "] [" + type + "] " + cleanMessage);
+            }
+        } catch (Exception e) {
+            Bukkit.getConsoleSender().sendMessage("§c[BatataQuente] Erro ao registrar log: " + e.getMessage());
+        }
+    }
+
     public static void setDebugMode(boolean debug) {
         debugMode = debug;
         Main.getInstance().getConfig().set("debug", debug);
         Main.getInstance().saveConfig();
+        log("Debug mode set to: " + (debugMode ? "ON" : "OFF"));
     }
-    
-    /**
-     * Adiciona um jogador à lista de jogadores que receberão mensagens de debug
-     * @param player Jogador que receberá as mensagens
-     */
+
     public static void addDebugPlayer(Player player) {
         if (!debugPlayers.contains(player.getUniqueId())) {
             debugPlayers.add(player.getUniqueId());
         }
     }
-    
-    /**
-     * Remove um jogador da lista de jogadores que recebem mensagens de debug
-     * @param player Jogador a ser removido
-     */
+
     public static void removeDebugPlayer(Player player) {
         debugPlayers.remove(player.getUniqueId());
     }
-    
-    /**
-     * Envia uma mensagem de debug para o console e para todos os jogadores na lista de debug
-     * @param message Mensagem a ser enviada
-     */
+
+    public static void log(String message) {
+        logToFile("LOG", message);
+    }
+
     public static void debug(String message) {
         if (!debugMode) return;
         
@@ -65,7 +146,8 @@ public class Logger {
 
         Main.getInstance().getLogger().info(formattedMessage);
 
-        // Enviar para todos os jogadores na lista de debug
+        logToFile("DEBUG", message);
+
         for (UUID uuid : debugPlayers) {
             Player player = Bukkit.getPlayer(uuid);
             if (player != null && player.isOnline()) {
@@ -73,28 +155,22 @@ public class Logger {
             }
         }
     }
-    
-    /**
-     * Envia uma mensagem de info para o console
-     * @param message Mensagem a ser enviada
-     */
+
     public static void info(String message) {
-        Main.getInstance().getLogger().info(MessageType.INFO.getColor() + "[INFO] §f" + message);
+        String formattedMessage = MessageType.INFO.getColor() + "[INFO] §f" + message;
+        Main.getInstance().getLogger().info(formattedMessage);
+        logToFile("INFO", message);
     }
-    
-    /**
-     * Envia uma mensagem de erro para o console
-     * @param message Mensagem a ser enviada
-     */
+
     public static void error(String message) {
-        Main.getInstance().getLogger().severe(MessageType.ERROR.getColor() + "[ERROR] §f" + message);
+        String formattedMessage = MessageType.ERROR.getColor() + "[ERROR] §f" + message;
+        Main.getInstance().getLogger().severe(formattedMessage);
+        logToFile("ERROR", message);
     }
-    
-    /**
-     * Envia uma mensagem de aviso para o console
-     * @param message Mensagem a ser enviada
-     */
+
     public static void warning(String message) {
-        Main.getInstance().getLogger().warning(MessageType.WARNING.getColor() + "[WARNING] §f" + message);
+        String formattedMessage = MessageType.WARNING.getColor() + "[WARNING] §f" + message;
+        Main.getInstance().getLogger().warning(formattedMessage);
+        logToFile("WARNING", message);
     }
 } 

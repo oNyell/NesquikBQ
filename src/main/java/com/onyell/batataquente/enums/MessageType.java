@@ -1,5 +1,8 @@
 package com.onyell.batataquente.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum MessageType {
     ERROR("§c"),
     SUCCESS("§a"),
@@ -12,9 +15,5 @@ public enum MessageType {
     
     MessageType(String color) {
         this.color = color;
-    }
-    
-    public String getColor() {
-        return color;
     }
 } 
